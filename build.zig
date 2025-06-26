@@ -4,14 +4,81 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib = b.addStaticLibrary(.{
-        .name = "binaryen",
+    const strip = b.option(bool, "strip", "strip binaries") orelse false;
+
+    const binaryen_mod = b.addModule("binaryen", .{
         .target = target,
         .optimize = optimize,
+        .link_libcpp = true,
+        .strip = strip,
     });
 
     const source_files = &[_][]const u8{
         "src/binaryen-c.cpp",
+        "third_party/llvm-project/Binary.cpp",
+        "third_party/llvm-project/ConvertUTF.cpp",
+        "third_party/llvm-project/DJB.cpp",
+        "third_party/llvm-project/DWARFAbbreviationDeclaration.cpp",
+        "third_party/llvm-project/DWARFAcceleratorTable.cpp",
+        "third_party/llvm-project/DWARFAddressRange.cpp",
+        "third_party/llvm-project/DWARFCompileUnit.cpp",
+        "third_party/llvm-project/DWARFContext.cpp",
+        "third_party/llvm-project/DWARFDataExtractor.cpp",
+        "third_party/llvm-project/DWARFDebugAbbrev.cpp",
+        "third_party/llvm-project/DWARFDebugAddr.cpp",
+        "third_party/llvm-project/DWARFDebugArangeSet.cpp",
+        "third_party/llvm-project/DWARFDebugAranges.cpp",
+        "third_party/llvm-project/DWARFDebugFrame.cpp",
+        "third_party/llvm-project/DWARFDebugInfoEntry.cpp",
+        "third_party/llvm-project/DWARFDebugLine.cpp",
+        "third_party/llvm-project/DWARFDebugLoc.cpp",
+        "third_party/llvm-project/DWARFDebugMacro.cpp",
+        "third_party/llvm-project/DWARFDebugPubTable.cpp",
+        "third_party/llvm-project/DWARFDebugRangeList.cpp",
+        "third_party/llvm-project/DWARFDebugRnglists.cpp",
+        "third_party/llvm-project/DWARFDie.cpp",
+        "third_party/llvm-project/DWARFEmitter.cpp",
+        "third_party/llvm-project/DWARFExpression.cpp",
+        "third_party/llvm-project/DWARFFormValue.cpp",
+        "third_party/llvm-project/DWARFGdbIndex.cpp",
+        "third_party/llvm-project/DWARFListTable.cpp",
+        "third_party/llvm-project/DWARFTypeUnit.cpp",
+        "third_party/llvm-project/DWARFUnit.cpp",
+        "third_party/llvm-project/DWARFUnitIndex.cpp",
+        "third_party/llvm-project/DWARFVerifier.cpp",
+        "third_party/llvm-project/DWARFVisitor.cpp",
+        "third_party/llvm-project/DWARFYAML.cpp",
+        "third_party/llvm-project/DataExtractor.cpp",
+        "third_party/llvm-project/Debug.cpp",
+        "third_party/llvm-project/Dwarf.cpp",
+        "third_party/llvm-project/Error.cpp",
+        "third_party/llvm-project/ErrorHandling.cpp",
+        "third_party/llvm-project/FormatVariadic.cpp",
+        "third_party/llvm-project/Hashing.cpp",
+        "third_party/llvm-project/LEB128.cpp",
+        "third_party/llvm-project/LineIterator.cpp",
+        "third_party/llvm-project/MCRegisterInfo.cpp",
+        "third_party/llvm-project/MD5.cpp",
+        "third_party/llvm-project/MemoryBuffer.cpp",
+        "third_party/llvm-project/NativeFormatting.cpp",
+        "third_party/llvm-project/ObjectFile.cpp",
+        "third_party/llvm-project/Optional.cpp",
+        "third_party/llvm-project/Path.cpp",
+        "third_party/llvm-project/ScopedPrinter.cpp",
+        "third_party/llvm-project/SmallVector.cpp",
+        "third_party/llvm-project/SourceMgr.cpp",
+        "third_party/llvm-project/StringMap.cpp",
+        "third_party/llvm-project/StringRef.cpp",
+        "third_party/llvm-project/SymbolicFile.cpp",
+        "third_party/llvm-project/Twine.cpp",
+        "third_party/llvm-project/UnicodeCaseFold.cpp",
+        "third_party/llvm-project/WithColor.cpp",
+        "third_party/llvm-project/YAMLParser.cpp",
+        "third_party/llvm-project/YAMLTraits.cpp",
+        "third_party/llvm-project/dwarf2yaml.cpp",
+        "third_party/llvm-project/obj2yaml_Error.cpp",
+        "third_party/llvm-project/raw_ostream.cpp",
+
         "src/ir/ExpressionAnalyzer.cpp",
         "src/ir/ExpressionManipulator.cpp",
         "src/ir/debuginfo.cpp",
@@ -35,11 +102,16 @@ pub fn build(b: *std.Build) void {
         "src/ir/table-utils.cpp",
         "src/ir/type-updating.cpp",
         "src/ir/module-splitting.cpp",
+
+        "src/asmjs/asmangle.cpp",
         "src/asmjs/asm_v_wasm.cpp",
         "src/asmjs/shared-constants.cpp",
+
         "src/cfg/Relooper.cpp",
+
         "src/emscripten-optimizer/optimizer-shared.cpp",
         "src/emscripten-optimizer/simple_ast.cpp",
+
         "src/parser/context-decls.cpp",
         "src/parser/context-defs.cpp",
         "src/parser/lexer.cpp",
@@ -50,6 +122,7 @@ pub fn build(b: *std.Build) void {
         "src/parser/parse-5-defs.cpp",
         "src/parser/wast-parser.cpp",
         "src/parser/wat-parser.cpp",
+
         "src/support/archive.cpp",
         "src/support/bits.cpp",
         "src/support/colors.cpp",
@@ -65,8 +138,10 @@ pub fn build(b: *std.Build) void {
         "src/support/safe_integer.cpp",
         "src/support/string.cpp",
         "src/support/suffix_tree.cpp",
+        "src/support/suffix_tree_node.cpp",
         "src/support/threads.cpp",
         "src/support/utilities.cpp",
+
         "src/wasm/literal.cpp",
         "src/wasm/parsing.cpp",
         "src/wasm/source-map.cpp",
@@ -82,7 +157,9 @@ pub fn build(b: *std.Build) void {
         "src/wasm/wasm-type.cpp",
         "src/wasm/wasm-type-shape.cpp",
         "src/wasm/wasm-validator.cpp",
+
         "src/analysis/cfg.cpp",
+
         "src/passes/pass.cpp",
         "src/passes/AbstractTypeRefining.cpp",
         "src/passes/AlignmentLowering.cpp",
@@ -191,6 +268,7 @@ pub fn build(b: *std.Build) void {
         "src/passes/Strip.cpp",
         "src/passes/StripEH.cpp",
         "src/passes/StripTargetFeatures.cpp",
+        "src/passes/test_passes.cpp",
         "src/passes/TraceCalls.cpp",
         "src/passes/TranslateEH.cpp",
         "src/passes/TrapMode.cpp",
@@ -203,17 +281,15 @@ pub fn build(b: *std.Build) void {
         "src/passes/Unsubtyping.cpp",
         "src/passes/Untee.cpp",
         "src/passes/Vacuum.cpp",
+        "src/passes/WasmIntrinsics.cpp",
     };
 
-    lib.addIncludePath(b.path("src"));
-    lib.addIncludePath(b.path("third_party/FP16/include"));
-    lib.addIncludePath(b.path("third_party/llvm-project/include"));
-    lib.addIncludePath(b.path("."));
+    binaryen_mod.addIncludePath(b.path("src"));
+    binaryen_mod.addIncludePath(b.path("third_party/FP16/include"));
+    binaryen_mod.addIncludePath(b.path("third_party/llvm-project/include"));
+    binaryen_mod.addIncludePath(b.path("."));
 
-    lib.installHeader(b.path("src/binaryen-c.h"), "binaryen-c.h");
-    lib.installHeader(b.path("src/wasm-delegations.def"), "wasm-delegations.def");
-
-    lib.addCSourceFiles(.{
+    binaryen_mod.addCSourceFiles(.{
         .files = source_files,
         .flags = &.{
             "-std=c++17",
@@ -224,8 +300,69 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    lib.linkSystemLibrary("pthread");
-    lib.linkLibCpp();
+    const lib_binaryen = b.addLibrary(.{
+        .name = "binaryen",
+        .root_module = binaryen_mod,
+        .linkage = .static,
+    });
 
-    b.installArtifact(lib);
+    lib_binaryen.installHeader(b.path("src/binaryen-c.h"), "binaryen-c.h");
+    lib_binaryen.installHeader(b.path("src/wasm-delegations.def"), "wasm-delegations.def");
+
+    lib_binaryen.linkSystemLibrary("pthread");
+
+    b.installArtifact(lib_binaryen);
+
+    const wasm_opt_mod = b.addModule("wasm-opt", .{
+        .target = target,
+        .optimize = optimize,
+        .strip = strip,
+    });
+    wasm_opt_mod.addIncludePath(b.path("src/tools"));
+    wasm_opt_mod.addIncludePath(b.path("src"));
+    wasm_opt_mod.addIncludePath(b.path("third_party/FP16/include"));
+    wasm_opt_mod.addIncludePath(b.path("src/tools/fuzzing"));
+    wasm_opt_mod.addCSourceFiles(.{
+        .files = &.{
+            "src/tools/wasm-opt.cpp",
+
+            "src/tools/fuzzing/fuzzing.cpp",
+            "src/tools/fuzzing/heap-types.cpp",
+            "src/tools/fuzzing/parameters.cpp",
+            "src/tools/fuzzing/random.cpp",
+        },
+        .language = .cpp,
+    });
+
+    wasm_opt_mod.linkLibrary(lib_binaryen);
+
+    const wasm_opt_exe = b.addExecutable(.{
+        .name = "wasm-merge",
+        .root_module = wasm_opt_mod,
+    });
+
+    b.installArtifact(wasm_opt_exe);
+
+    const wasm_merge_mod = b.addModule("wasm-merge", .{
+        .target = target,
+        .optimize = optimize,
+        .strip = strip,
+    });
+    wasm_merge_mod.addIncludePath(b.path("src/tools"));
+    wasm_merge_mod.addIncludePath(b.path("src"));
+    wasm_merge_mod.addCSourceFiles(.{
+        .files = &.{
+            "src/tools/wasm-merge.cpp",
+        },
+        .language = .cpp,
+    });
+
+    wasm_merge_mod.linkLibrary(lib_binaryen);
+
+    const wasm_merge_exe = b.addExecutable(.{
+        .name = "wasm-merge",
+        .root_module = wasm_merge_mod,
+    });
+
+    b.installArtifact(wasm_merge_exe);
 }
