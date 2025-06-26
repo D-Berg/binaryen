@@ -1,6 +1,8 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+const wasm_intrinsics_wat = @embedFile("src/passes/wasm-intrinsics.wat");
+
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -36,6 +38,12 @@ pub fn build(b: *std.Build) void {
         .root = b.path("third_party"),
         .files = third_party_source_files,
         .flags = flags,
+    });
+
+    binaryen_mod.addCSourceFile(.{
+        .file = try WasmIntrinsics(b),
+        .flags = flags,
+        .language = .cpp,
     });
 
     const lib_binaryen = b.addLibrary(.{
@@ -105,6 +113,22 @@ pub fn build(b: *std.Build) void {
     });
 
     b.installArtifact(wasm_merge_exe);
+}
+
+fn WasmIntrinsics(b: *std.Build) !std.Build.LazyPath {
+    var out: std.ArrayListUnmanaged(u8) = .empty;
+
+    const writer = out.writer(b.allocator);
+
+    for (wasm_intrinsics_wat) |c| {
+        try writer.print("0x{x},", .{c});
+    }
+    const wasm_intrinsics = b.addConfigHeader(
+        .{ .style = .{ .cmake = b.path("src/passes/WasmIntrinsics.cpp.in") } },
+        .{ .WASM_INTRINSICS_EMBED = try out.toOwnedSlice(b.allocator) },
+    );
+
+    return wasm_intrinsics.getOutput();
 }
 
 const third_party_source_files = &[_][]const u8{
@@ -378,5 +402,4 @@ const src_source_files = &[_][]const u8{
     "passes/Unsubtyping.cpp",
     "passes/Untee.cpp",
     "passes/Vacuum.cpp",
-    "passes/WasmIntrinsics.cpp",
 };
