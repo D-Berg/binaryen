@@ -43,6 +43,7 @@
         "third_party",
         // For example...
         "LICENSE",
+        "config.h.in",
         //"README.md",
     },
 }
