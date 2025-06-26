@@ -16,6 +16,7 @@ pub fn build(b: *std.Build) !void {
     });
 
     binaryen_mod.addIncludePath(b.path("src"));
+    binaryen_mod.addIncludePath(b.path("src/emscripten-optimizer"));
     binaryen_mod.addIncludePath(b.path("third_party/FP16/include"));
     binaryen_mod.addIncludePath(b.path("third_party/llvm-project/include"));
     binaryen_mod.addIncludePath(b.path("."));
@@ -241,6 +242,7 @@ const src_source_files = &[_][]const u8{
 
     "emscripten-optimizer/optimizer-shared.cpp",
     "emscripten-optimizer/simple_ast.cpp",
+    "emscripten-optimizer/parser.cpp",
 
     "parser/context-decls.cpp",
     "parser/context-defs.cpp",
