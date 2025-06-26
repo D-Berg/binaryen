@@ -54,6 +54,7 @@ pub fn build(b: *std.Build) !void {
 
     lib_binaryen.installHeader(b.path("src/binaryen-c.h"), "binaryen-c.h");
     lib_binaryen.installHeader(b.path("src/wasm-delegations.def"), "wasm-delegations.def");
+    lib_binaryen.addConfigHeader(Config(b));
 
     lib_binaryen.linkSystemLibrary("pthread");
 
@@ -84,7 +85,7 @@ pub fn build(b: *std.Build) !void {
     wasm_opt_mod.linkLibrary(lib_binaryen);
 
     const wasm_opt_exe = b.addExecutable(.{
-        .name = "wasm-merge",
+        .name = "wasm-opt",
         .root_module = wasm_opt_mod,
     });
 
@@ -129,6 +130,14 @@ fn WasmIntrinsics(b: *std.Build) !std.Build.LazyPath {
     );
 
     return wasm_intrinsics.getOutput();
+}
+
+fn Config(b: *std.Build) *std.Build.Step.ConfigHeader {
+    const config_h = b.addConfigHeader(
+        .{ .style = .{ .cmake = b.path("config.h.in") }, .include_path = "config.h" },
+        .{ .PROJECT_VERSION = "123 (version_123-193-g42f30dd4f)" }, // TODO: use git to get version
+    );
+    return config_h;
 }
 
 const third_party_source_files = &[_][]const u8{
