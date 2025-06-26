@@ -6,6 +6,7 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const linkage = b.option(std.builtin.LinkMode, "linkage", "Build and link as dynamic or static library") orelse .static;
     const strip = b.option(bool, "strip", "strip binaries") orelse false;
 
     const binaryen_mod = b.addModule("binaryen", .{
@@ -50,7 +51,7 @@ pub fn build(b: *std.Build) !void {
     const lib_binaryen = b.addLibrary(.{
         .name = "binaryen",
         .root_module = binaryen_mod,
-        .linkage = .static,
+        .linkage = linkage,
     });
 
     lib_binaryen.installHeader(b.path("src/binaryen-c.h"), "binaryen-c.h");
