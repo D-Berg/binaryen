@@ -290,6 +290,7 @@ pub fn build(b: *std.Build) void {
     binaryen_mod.addIncludePath(b.path("."));
 
     binaryen_mod.addCSourceFiles(.{
+        .root = b.path("."),
         .files = source_files,
         .flags = &.{
             "-std=c++17",
@@ -323,6 +324,7 @@ pub fn build(b: *std.Build) void {
     wasm_opt_mod.addIncludePath(b.path("third_party/FP16/include"));
     wasm_opt_mod.addIncludePath(b.path("src/tools/fuzzing"));
     wasm_opt_mod.addCSourceFiles(.{
+        .root = b.path("."),
         .files = &.{
             "src/tools/wasm-opt.cpp",
 
@@ -351,6 +353,7 @@ pub fn build(b: *std.Build) void {
     wasm_merge_mod.addIncludePath(b.path("src/tools"));
     wasm_merge_mod.addIncludePath(b.path("src"));
     wasm_merge_mod.addCSourceFiles(.{
+        .root = b.path("."),
         .files = &.{
             "src/tools/wasm-merge.cpp",
         },
