@@ -62,6 +62,19 @@ pub fn build(b: *std.Build) !void {
 
     b.installArtifact(lib_binaryen);
 
+    buildTools(b, target, optimize, strip, lib_binaryen);
+}
+
+/// Only ran if doing zig build tools
+fn buildTools(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    strip: bool,
+    lib_binaryen: *std.Build.Step.Compile,
+) void {
+    const tools = b.step("tools", "Build wasm tools");
+
     const wasm_opt_mod = b.addModule("wasm-opt", .{
         .target = target,
         .optimize = optimize,
@@ -91,7 +104,8 @@ pub fn build(b: *std.Build) !void {
         .root_module = wasm_opt_mod,
     });
 
-    b.installArtifact(wasm_opt_exe);
+    const wasm_opt_install = b.addInstallArtifact(wasm_opt_exe, .{});
+    tools.dependOn(&wasm_opt_install.step);
 
     const wasm_merge_mod = b.addModule("wasm-merge", .{
         .target = target,
@@ -115,7 +129,8 @@ pub fn build(b: *std.Build) !void {
         .root_module = wasm_merge_mod,
     });
 
-    b.installArtifact(wasm_merge_exe);
+    const install_wasm_merge = b.addInstallArtifact(wasm_merge_exe, .{});
+    tools.dependOn(&install_wasm_merge.step);
 }
 
 fn WasmIntrinsics(b: *std.Build) !std.Build.LazyPath {
@@ -127,7 +142,10 @@ fn WasmIntrinsics(b: *std.Build) !std.Build.LazyPath {
         try writer.print("0x{x},", .{c});
     }
     const wasm_intrinsics = b.addConfigHeader(
-        .{ .style = .{ .cmake = b.path("src/passes/WasmIntrinsics.cpp.in") } },
+        .{
+            .style = .{ .cmake = b.path("src/passes/WasmIntrinsics.cpp.in") },
+            .include_path = "WasmIntrinsics.cpp",
+        },
         .{ .WASM_INTRINSICS_EMBED = try out.toOwnedSlice(b.allocator) },
     );
 
